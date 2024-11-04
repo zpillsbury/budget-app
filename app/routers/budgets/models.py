@@ -6,7 +6,10 @@ from pydantic import BaseModel
 
 class Budget(BaseModel):
     id: str
-    budget: float
+    user_id: str
+    total: float
+    category: str
+    name: str
     created_at: datetime
     updated_at: Optional[datetime] = None
 
