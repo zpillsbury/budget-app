@@ -6,4 +6,4 @@ from app.settings import settings
 
 db: AsyncIOMotorDatabase[Any] = AsyncIOMotorClient(
     settings.mongo_uri, tlsAllowInvalidCertificates=True
-)["gas"]
+)["Budget-app"]
