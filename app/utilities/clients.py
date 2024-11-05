@@ -11,15 +11,9 @@ def get_db() -> AsyncIOMotorDatabase[Any]:
     """
     Get MongoDB
     """
-    if settings.testing:
-        from mongomock_motor import AsyncMongoMockClient
-
-        mock_db: AsyncIOMotorDatabase[Any] = AsyncMongoMockClient()["Budget-app"]
-        return mock_db
-    else:
-        return AsyncIOMotorClient(settings.mongo_uri, tlsAllowInvalidCertificates=True)[
-            "Budget-app"
-        ]
+    return AsyncIOMotorClient(settings.mongo_uri, tlsAllowInvalidCertificates=True)[
+        "Budget-app"
+    ]
 
 
 db = get_db()
