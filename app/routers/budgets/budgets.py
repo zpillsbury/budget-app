@@ -33,6 +33,7 @@ router = APIRouter(
         }
     },
 )
+
 security = HTTPBearer()
 
 
@@ -104,6 +105,7 @@ async def get_budget(
     updated_at = doc.get("updated_at")
     if updated_at:
         updated_at = updated_at.isoformat()
+
     return Budget(
         id=str(doc.get("_id")),
         user_id=str(doc.get("_id")),

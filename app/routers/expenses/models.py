@@ -15,11 +15,15 @@ class Expense(BaseModel):
 
 
 class ExpenseCreate(BaseModel):
-    expense: float
+    total: float
+    category: str
+    place: str
 
 
 class ExpenseUpdate(BaseModel):
-    expense: float
+    total: float
+    category: str
+    place: str
 
 
 class ExpenseCreatResult(BaseModel):

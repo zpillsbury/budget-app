@@ -15,11 +15,15 @@ class Budget(BaseModel):
 
 
 class BudgetCreate(BaseModel):
-    budget: float
+    total: float
+    category: str
+    name: str
 
 
 class BudgetUpdate(BaseModel):
-    budget: float
+    total: float
+    category: str
+    name: str
 
 
 class BudgetCreatResult(BaseModel):
