@@ -1,13 +1,17 @@
 from datetime import datetime, timezone
+from typing import Annotated
 
 import bson
 from bson import ObjectId
 from fastapi import (
     APIRouter,
+    Depends,
     HTTPException,
     status,
 )
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from app.auth import validate_access
 from app.models import GenericException
 from app.utilities.clients import db
 
@@ -30,9 +34,14 @@ router = APIRouter(
     },
 )
 
+security = HTTPBearer()
+
 
 @router.get("", response_model=list[Expense])
-async def get_expenses() -> list[Expense]:
+async def get_expenses(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    user_id: Annotated[None | str, Depends(validate_access)],
+) -> list[Expense]:
     """
     Get gas expenses.
     """
@@ -46,7 +55,10 @@ async def get_expenses() -> list[Expense]:
         results.append(
             Expense(
                 id=str(doc.get("_id")),
-                expense=doc.get("expense"),
+                user_id=str(doc.get("_id")),
+                total=doc.get("total"),
+                category=doc.get("total"),
+                place=doc.get("place"),
                 updated_at=updated_at,
                 created_at=doc.get("created_at").isoformat(),
             )
@@ -70,6 +82,8 @@ async def get_expenses() -> list[Expense]:
     },
 )
 async def get_expense(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    user_id: Annotated[None | str, Depends(validate_access)],
     expense_id: str,
 ) -> Expense:
     """
@@ -93,7 +107,10 @@ async def get_expense(
         updated_at = updated_at.isoformat()
     return Expense(
         id=str(doc.get("_id")),
-        expense=doc.get("expense"),
+        user_id=str(doc.get("_id")),
+        total=doc.get("total"),
+        category=doc.get("total"),
+        place=doc.get("place"),
         updated_at=updated_at,
         created_at=doc.get("created_at").isoformat(),
     )
@@ -104,6 +121,8 @@ async def get_expense(
     response_model=ExpenseCreatResult,
 )
 async def add_expense(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    user_id: Annotated[None | str, Depends(validate_access)],
     new_expense: ExpenseCreate,
 ) -> ExpenseCreatResult:
     """
@@ -131,6 +150,8 @@ async def add_expense(
     },
 )
 async def delete_expense(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    user_id: Annotated[None | str, Depends(validate_access)],
     expense_id: str,
 ) -> ExpenseSuccessResult:
     """
@@ -169,6 +190,8 @@ async def delete_expense(
     },
 )
 async def update_expense(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    user_id: Annotated[None | str, Depends(validate_access)],
     expense_id: str,
     expense_update: ExpenseUpdate,
 ) -> ExpenseSuccessResult:

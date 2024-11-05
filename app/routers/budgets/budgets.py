@@ -1,13 +1,17 @@
 from datetime import datetime, timezone
+from typing import Annotated
 
 import bson
 from bson import ObjectId
 from fastapi import (
     APIRouter,
+    Depends,
     HTTPException,
     status,
 )
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from app.auth import validate_access
 from app.models import GenericException
 from app.utilities.clients import db
 
@@ -29,10 +33,14 @@ router = APIRouter(
         }
     },
 )
+security = HTTPBearer()
 
 
 @router.get("", response_model=list[Budget])
-async def get_budgets() -> list[Budget]:
+async def get_budgets(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    user_id: Annotated[None | str, Depends(validate_access)],
+) -> list[Budget]:
     """
     Get gas budgets.
     """
@@ -46,7 +54,9 @@ async def get_budgets() -> list[Budget]:
         results.append(
             Budget(
                 id=str(doc.get("_id")),
-                budget=doc.get("budget"),
+                total=doc.get("total"),
+                category=doc.get("total"),
+                name=doc.get("name"),
                 updated_at=updated_at,
                 created_at=doc.get("created_at").isoformat(),
             )
@@ -70,6 +80,8 @@ async def get_budgets() -> list[Budget]:
     },
 )
 async def get_budget(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    user_id: Annotated[None | str, Depends(validate_access)],
     budget_id: str,
 ) -> Budget:
     """
@@ -93,7 +105,9 @@ async def get_budget(
         updated_at = updated_at.isoformat()
     return Budget(
         id=str(doc.get("_id")),
-        budget=doc.get("budget"),
+        total=doc.get("total"),
+        category=doc.get("total"),
+        name=doc.get("name"),
         updated_at=updated_at,
         created_at=doc.get("created_at").isoformat(),
     )
@@ -104,6 +118,8 @@ async def get_budget(
     response_model=BudgetCreatResult,
 )
 async def add_budget(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    user_id: Annotated[None | str, Depends(validate_access)],
     new_budget: BudgetCreate,
 ) -> BudgetCreatResult:
     """
@@ -131,6 +147,8 @@ async def add_budget(
     },
 )
 async def delete_budget(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    user_id: Annotated[None | str, Depends(validate_access)],
     budget_id: str,
 ) -> BudgetSuccessResult:
     """
@@ -169,6 +187,8 @@ async def delete_budget(
     },
 )
 async def update_budget(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    user_id: Annotated[None | str, Depends(validate_access)],
     budget_id: str,
     budget_update: BudgetUpdate,
 ) -> BudgetSuccessResult:

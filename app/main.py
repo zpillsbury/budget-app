@@ -4,6 +4,7 @@ from typing import Any, Callable, TypeVar
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.routers.auth import auth
 from app.routers.budgets import budgets
 from app.routers.expenses import expenses
 
@@ -52,5 +53,6 @@ async def process_time_log_middleware(request: Request, call_next: F) -> Respons
     return response
 
 
+app.include_router(auth.router)
 app.include_router(budgets.router)
 app.include_router(expenses.router)
