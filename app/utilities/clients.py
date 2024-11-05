@@ -18,7 +18,7 @@ def get_db() -> AsyncIOMotorDatabase[Any]:
         return mock_db
     else:
         return AsyncIOMotorClient(settings.mongo_uri, tlsAllowInvalidCertificates=True)[
-            "poopyrus"
+            "Budget-app"
         ]
 
 
