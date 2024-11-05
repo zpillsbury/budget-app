@@ -130,7 +130,11 @@ async def add_budget(
     Add a gas budget.
     """
 
-    data = new_budget.model_dump() | {"created_at": datetime.now(timezone.utc)}
+    data = (
+        new_budget.model_dump()
+        | {"user_id": user_id}
+        | {"created_at": datetime.now(timezone.utc)}
+    )
     create_result = await db.budgets.insert_one(data)
 
     return BudgetCreatResult(id=str(create_result.inserted_id))

@@ -129,7 +129,11 @@ async def add_expense(
     Add a gas expense.
     """
 
-    data = new_expense.model_dump() | {"created_at": datetime.now(timezone.utc)}
+    data = (
+        new_expense.model_dump()
+        | {"user_id": user_id}
+        | {"created_at": datetime.now(timezone.utc)}
+    )
     create_result = await db.expenses.insert_one(data)
 
     return ExpenseCreatResult(id=str(create_result.inserted_id))
