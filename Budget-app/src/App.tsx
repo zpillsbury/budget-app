@@ -1,33 +1,63 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react"
+import "./App.css"
 
-function App() {
-  const [count, setCount] = useState(0)
+interface Moneybudget {
+  id: string
+  budget: number
+  created_at: string
+  updated_at: string | null
+}
+
+export function App() {
+  const [budgets, setBudgets] = useState<Moneybudget[]>([])
+  const [money, setMoney] = useState("")
+
+  useEffect(() => {
+    async function getBudgets() {
+      const response = await fetch("http://localhost:8000/v1/budgets", {
+        method: "GET",
+      })
+
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      setBudgets(data)
+    }
+
+    getBudgets()
+  }, [])
+
+  async function addBudget() {
+    const send = await fetch("http://localhost:8000/v1/budgets", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        budget: money,
+      }),
+    })
+
+    if (!send.ok) {
+      throw new Error(`Send status: ${send.status}`)
+    }
+  }
 
   return (
     <>
+      <h1>Budgets</h1>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <input value={money} type="number" onChange={(e) => setMoney(e.target.value)} />
+        <button onClick={addBudget}>Add Budget</button>
       </div>
-      <h1>Vite + React</h1>
+
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        {budgets.reverse().map((budget) => (
+          <p key={budget.id}>{budget.budget}</p>
+        ))}
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }
