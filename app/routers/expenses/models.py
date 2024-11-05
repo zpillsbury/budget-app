@@ -21,9 +21,9 @@ class ExpenseCreate(BaseModel):
 
 
 class ExpenseUpdate(BaseModel):
-    total: float
-    category: str
-    place: str
+    total: Optional[float] = None
+    category: Optional[str] = None
+    place: Optional[str] = None
 
 
 class ExpenseCreatResult(BaseModel):

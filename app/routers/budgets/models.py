@@ -21,9 +21,9 @@ class BudgetCreate(BaseModel):
 
 
 class BudgetUpdate(BaseModel):
-    total: float
-    category: str
-    name: str
+    total: Optional[float] = None
+    category: Optional[str] = None
+    name: Optional[str] = None
 
 
 class BudgetCreatResult(BaseModel):
