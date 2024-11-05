@@ -55,7 +55,7 @@ async def get_budgets(
         results.append(
             Budget(
                 id=str(doc.get("_id")),
-                user_id=str(doc.get("_id")),
+                user_id=doc.get("_id"),
                 total=doc.get("total"),
                 category=doc.get("total"),
                 name=doc.get("name"),
@@ -108,7 +108,7 @@ async def get_budget(
 
     return Budget(
         id=str(doc.get("_id")),
-        user_id=str(doc.get("_id")),
+        user_id=doc.get("_id"),
         total=doc.get("total"),
         category=doc.get("total"),
         name=doc.get("name"),
