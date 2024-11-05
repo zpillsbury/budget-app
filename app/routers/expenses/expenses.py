@@ -55,7 +55,7 @@ async def get_expenses(
         results.append(
             Expense(
                 id=str(doc.get("_id")),
-                user_id=str(doc.get("_id")),
+                user_id=doc.get("_id"),
                 total=doc.get("total"),
                 category=doc.get("total"),
                 place=doc.get("place"),
@@ -107,7 +107,7 @@ async def get_expense(
         updated_at = updated_at.isoformat()
     return Expense(
         id=str(doc.get("_id")),
-        user_id=str(doc.get("_id")),
+        user_id=doc.get("_id"),
         total=doc.get("total"),
         category=doc.get("total"),
         place=doc.get("place"),
