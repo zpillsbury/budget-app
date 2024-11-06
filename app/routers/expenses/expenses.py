@@ -46,7 +46,7 @@ async def get_expenses(
     Get gas expenses.
     """
     results = []
-    async for doc in db.expenses.find():
+    async for doc in db.expenses.find({"user_id": user_id}):
 
         updated_at = doc.get("updated_at")
         if updated_at:
@@ -96,7 +96,7 @@ async def get_expense(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid expense id format."
         )
 
-    doc = await db.expenses.find_one({"_id": expense_object_id})
+    doc = await db.expenses.find_one({"_id": expense_object_id, "user_id": user_id})
     if not doc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found."
@@ -105,6 +105,7 @@ async def get_expense(
     updated_at = doc.get("updated_at")
     if updated_at:
         updated_at = updated_at.isoformat()
+
     return Expense(
         id=str(doc.get("_id")),
         user_id=doc.get("user_id"),
@@ -169,7 +170,9 @@ async def delete_expense(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid expense id format."
         )
 
-    delete_result = await db.expenses.delete_one({"_id": expense_object_id})
+    delete_result = await db.expenses.delete_one(
+        {"_id": expense_object_id, "user_id": user_id}
+    )
     if delete_result.deleted_count == 0:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -214,7 +217,7 @@ async def update_expense(
         "updated_at": datetime.now(timezone.utc)
     }
     update_result = await db.expenses.update_one(
-        {"_id": expense_object_id}, {"$set": update_data}
+        {"_id": expense_object_id, "user_id": user_id}, {"$set": update_data}
     )
 
     if update_result.matched_count == 0:
