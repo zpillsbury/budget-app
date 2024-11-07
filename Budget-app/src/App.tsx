@@ -3,7 +3,10 @@ import "./App.css"
 
 interface Moneybudget {
   id: string
-  budget: number
+  user_id: string
+  total: number
+  category: string
+  name: string
   created_at: string
   updated_at: string | null
 }
@@ -49,7 +52,7 @@ export function App() {
     <>
       <h1>Budgets</h1>
       <div>
-        <input value={money} type="number" onChange={(e) => setMoney(e.target.value)} />
+        <input value={money} type="string" onChange={(e) => setMoney(e.target.value)} />
         <button onClick={addBudget}>Add Budget</button>
       </div>
 

@@ -46,7 +46,7 @@ async def get_budgets(
     Get gas budgets.
     """
     results = []
-    async for doc in db.budgets.find():
+    async for doc in db.budgets.find({"user_id": user_id}):
 
         updated_at = doc.get("updated_at")
         if updated_at:
@@ -96,7 +96,7 @@ async def get_budget(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid budget id format."
         )
 
-    doc = await db.budgets.find_one({"_id": budget_object_id})
+    doc = await db.budgets.find_one({"_id": budget_object_id, "user_id": user_id})
     if not doc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Budget not found."
@@ -170,7 +170,9 @@ async def delete_budget(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid budget id format."
         )
 
-    delete_result = await db.budgets.delete_one({"_id": budget_object_id})
+    delete_result = await db.budgets.delete_one(
+        {"_id": budget_object_id, "user_id": user_id}
+    )
     if delete_result.deleted_count == 0:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -215,7 +217,7 @@ async def update_budget(
         "updated_at": datetime.now(timezone.utc)
     }
     update_result = await db.budgets.update_one(
-        {"_id": budget_object_id}, {"$set": update_data}
+        {"_id": budget_object_id, "user_id": user_id}, {"$set": update_data}
     )
 
     if update_result.matched_count == 0:
