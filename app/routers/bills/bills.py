@@ -123,12 +123,10 @@ async def add_bill(
     """
     Add a bill.
     """
-
-    data = (
-        new_bill.model_dump()
-        | {"user_id": user_id}
-        | {"created_at": datetime.now(timezone.utc)}
-    )
+    data = new_bill.model_dump() | {
+        "user_id": user_id,
+        "created_at": datetime.now(timezone.utc),
+    }
     create_result = await db.bills.insert_one(data)
 
     return BillCreateResult(id=str(create_result.inserted_id))
@@ -154,9 +152,8 @@ async def delete_bill(
     bill_id: str,
 ) -> BillSuccessResult:
     """
-    Delete bill.
+    Deletes a bill.
     """
-
     try:
         bill_object_id = ObjectId(bill_id)
     except bson.errors.InvalidId:
@@ -197,9 +194,8 @@ async def update_bill(
     bill_update: BillUpdate,
 ) -> BillSuccessResult:
     """
-    Update bill.
+    Updates a bill.
     """
-
     try:
         bill_object_id = ObjectId(bill_id)
     except bson.errors.InvalidId:
