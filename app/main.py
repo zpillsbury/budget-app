@@ -8,6 +8,7 @@ from app.routers.auth import auth
 from app.routers.bills import bills
 from app.routers.budgets import budgets
 from app.routers.expenses import expenses
+from app.routers.wishlists import wishlists
 
 from .utilities.log import logger
 
@@ -58,3 +59,4 @@ app.include_router(auth.router)
 app.include_router(bills.router)
 app.include_router(budgets.router)
 app.include_router(expenses.router)
+app.include_router(wishlists.router)

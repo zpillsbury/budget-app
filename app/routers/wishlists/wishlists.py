@@ -14,18 +14,19 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.auth import validate_access
 from app.models import GenericException
 from app.utilities.clients import db
+from app.utilities.functions import validate_date
 
 from .models import (
-    Expense,
-    ExpenseCreate,
-    ExpenseCreatResult,
-    ExpenseSuccessResult,
-    ExpenseUpdate,
+    Wishlist,
+    WishlistCreate,
+    WishlistCreatResult,
+    WishlistSuccessResult,
+    WishlistUpdate,
 )
 
 router = APIRouter(
-    prefix="/v1/expenses",
-    tags=["expenses"],
+    prefix="/v1/wishlists",
+    tags=["wishlists"],
     responses={
         status.HTTP_401_UNAUTHORIZED: {
             "description": "Unauthorized",
@@ -37,29 +38,25 @@ router = APIRouter(
 security = HTTPBearer()
 
 
-@router.get("", response_model=list[Expense])
-async def get_expenses(
+@router.get("", response_model=list[Wishlist])
+async def get_wishlists(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     user_id: Annotated[None | str, Depends(validate_access)],
-) -> list[Expense]:
+) -> list[Wishlist]:
     """
-    Get gas expenses.
+    Get gas wishlists.
     """
     results = []
-    async for doc in db.expenses.find({"user_id": user_id}):
-
-        updated_at = doc.get("updated_at")
-        if updated_at:
-            updated_at = updated_at.isoformat()
+    async for doc in db.wishlists.find({"user_id": user_id}):
 
         results.append(
-            Expense(
+            Wishlist(
                 id=str(doc.get("_id")),
                 user_id=doc.get("user_id"),
                 total=doc.get("total"),
                 category=doc.get("category"),
-                place=doc.get("place"),
-                updated_at=doc.get("updated_at"),
+                name=doc.get("name"),
+                updated_at=validate_date(doc.get("updated_at")),
                 created_at=doc.get("created_at"),
             )
         )
@@ -68,157 +65,159 @@ async def get_expenses(
 
 
 @router.get(
-    "/{expense_id}",
-    response_model=Expense,
+    "/{wishlist_id}",
+    response_model=Wishlist,
     responses={
         status.HTTP_400_BAD_REQUEST: {
-            "description": "Invalid expense id format.",
+            "description": "Invalid wishlist id format.",
             "model": GenericException,
         },
         status.HTTP_404_NOT_FOUND: {
-            "description": "Expense not found.",
+            "description": "Wishlist not found.",
             "model": GenericException,
         },
     },
 )
-async def get_expense(
+async def get_wishlist(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     user_id: Annotated[None | str, Depends(validate_access)],
-    expense_id: str,
-) -> Expense:
+    wishlist_id: str,
+) -> Wishlist:
     """
-    Get a gas expense.
+    Get a wishlist.
     """
     try:
-        expense_object_id = ObjectId(expense_id)
+        wishlist_object_id = ObjectId(wishlist_id)
     except bson.errors.InvalidId:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid expense id format."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid wishlist id format.",
         )
 
-    doc = await db.expenses.find_one({"_id": expense_object_id, "user_id": user_id})
+    doc = await db.wishlists.find_one({"_id": wishlist_object_id, "user_id": user_id})
     if not doc:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found."
+            status_code=status.HTTP_404_NOT_FOUND, detail="Wishlist not found."
         )
 
-    return Expense(
+    return Wishlist(
         id=str(doc.get("_id")),
         user_id=doc.get("user_id"),
         total=doc.get("total"),
         category=doc.get("category"),
-        place=doc.get("place"),
-        updated_at=doc.get("updated_at"),
-        created_at=doc.get("created_at"),
+        name=doc.get("name"),
+        updated_at=validate_date(doc.get("updated_at")),
+        created_at=doc.get("created_at").isoformat(),
     )
 
 
 @router.post(
     "",
-    response_model=ExpenseCreatResult,
+    response_model=WishlistCreatResult,
 )
-async def add_expense(
+async def add_wishlist(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     user_id: Annotated[None | str, Depends(validate_access)],
-    new_expense: ExpenseCreate,
-) -> ExpenseCreatResult:
+    new_wishlist: WishlistCreate,
+) -> WishlistCreatResult:
     """
-    Add a gas expense.
+    Add a wishlist.
     """
 
-    data = (
-        new_expense.model_dump()
-        | {"user_id": user_id}
-        | {"created_at": datetime.now(timezone.utc)}
-    )
-    create_result = await db.expenses.insert_one(data)
+    data = new_wishlist.model_dump() | {
+        "user_id": user_id,
+        "created_at": datetime.now(timezone.utc),
+    }
+    create_result = await db.wishlists.insert_one(data)
 
-    return ExpenseCreatResult(id=str(create_result.inserted_id))
+    return WishlistCreatResult(id=str(create_result.inserted_id))
 
 
 @router.delete(
-    "/{expense_id}",
-    response_model=ExpenseSuccessResult,
+    "/{wishlist_id}",
+    response_model=WishlistSuccessResult,
     responses={
         status.HTTP_400_BAD_REQUEST: {
-            "description": "Invalid expense id format",
+            "description": "Invalid wishlist id format",
             "model": GenericException,
         },
         status.HTTP_404_NOT_FOUND: {
-            "description": "Expense not found",
+            "description": "Wishlist not found",
             "model": GenericException,
         },
     },
 )
-async def delete_expense(
+async def delete_wishlist(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     user_id: Annotated[None | str, Depends(validate_access)],
-    expense_id: str,
-) -> ExpenseSuccessResult:
+    wishlist_id: str,
+) -> WishlistSuccessResult:
     """
-    Delete gas expense.
+    Delete gas wishlist.
     """
 
     try:
-        expense_object_id = ObjectId(expense_id)
+        wishlist_object_id = ObjectId(wishlist_id)
     except bson.errors.InvalidId:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid expense id format."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid wishlist id format.",
         )
 
-    delete_result = await db.expenses.delete_one(
-        {"_id": expense_object_id, "user_id": user_id}
+    delete_result = await db.wishlists.delete_one(
+        {"_id": wishlist_object_id, "user_id": user_id}
     )
     if delete_result.deleted_count == 0:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Expense not found",
+            detail="Wishlist not found",
         )
 
-    return ExpenseSuccessResult(success=True)
+    return WishlistSuccessResult(success=True)
 
 
 @router.patch(
-    "/{expense_id}",
-    response_model=ExpenseSuccessResult,
+    "/{wishlist_id}",
+    response_model=WishlistSuccessResult,
     responses={
         status.HTTP_400_BAD_REQUEST: {
-            "description": "Invalid expense id format, No changes provided",
+            "description": "Invalid wishlist id format, No changes provided",
             "model": GenericException,
         },
         status.HTTP_404_NOT_FOUND: {
-            "description": "Expense not found.",
+            "description": "Wishlist not found.",
             "model": GenericException,
         },
     },
 )
-async def update_expense(
+async def update_wishlist(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     user_id: Annotated[None | str, Depends(validate_access)],
-    expense_id: str,
-    expense_update: ExpenseUpdate,
-) -> ExpenseSuccessResult:
+    wishlist_id: str,
+    wishlist_update: WishlistUpdate,
+) -> WishlistSuccessResult:
     """
-    Update gas expense.
+    Update gas wishlist.
     """
 
     try:
-        expense_object_id = ObjectId(expense_id)
+        wishlist_object_id = ObjectId(wishlist_id)
     except bson.errors.InvalidId:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid expense id format."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid wishlist id format.",
         )
 
-    update_data = expense_update.model_dump(exclude_unset=True) | {
+    update_data = wishlist_update.model_dump(exclude_unset=True) | {
         "updated_at": datetime.now(timezone.utc)
     }
-    update_result = await db.expenses.update_one(
-        {"_id": expense_object_id, "user_id": user_id}, {"$set": update_data}
+    update_result = await db.wishlists.update_one(
+        {"_id": wishlist_object_id, "user_id": user_id}, {"$set": update_data}
     )
 
     if update_result.matched_count == 0:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Expense not found."
+            status_code=status.HTTP_404_NOT_FOUND, detail="Wishlist not found."
         )
 
-    return ExpenseSuccessResult(success=True)
+    return WishlistSuccessResult(success=True)
