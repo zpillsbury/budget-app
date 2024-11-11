@@ -42,10 +42,6 @@ async def get_bills(
     results = []
     async for doc in db.bills.find({"user_id": user_id}):
 
-        updated_at = doc.get("updated_at")
-        if updated_at:
-            updated_at = updated_at.isoformat()
-
         results.append(
             Bill(
                 id=str(doc.get("_id")),
@@ -53,8 +49,8 @@ async def get_bills(
                 total=doc.get("total"),
                 category=doc.get("category"),
                 place=doc.get("place"),
-                updated_at=updated_at,
-                created_at=doc.get("created_at").isoformat(),
+                updated_at=doc.get("updated_at"),
+                created_at=doc.get("created_at"),
             )
         )
 
@@ -96,18 +92,14 @@ async def get_bill(
             status_code=status.HTTP_404_NOT_FOUND, detail="Bill not found."
         )
 
-    updated_at = doc.get("updated_at")
-    if updated_at:
-        updated_at = updated_at.isoformat()
-
     return Bill(
         id=str(doc.get("_id")),
         user_id=doc.get("user_id"),
         total=doc.get("total"),
         category=doc.get("category"),
         place=doc.get("place"),
-        updated_at=updated_at,
-        created_at=doc.get("created_at").isoformat(),
+        updated_at=doc.get("updated_at"),
+        created_at=doc.get("created_at"),
     )
 
 
@@ -128,8 +120,9 @@ async def add_bill(
         "created_at": datetime.now(timezone.utc),
     }
     create_result = await db.bills.insert_one(data)
+    create_result_str = str(create_result.inserted_id)
 
-    return BillCreateResult(id=str(create_result.inserted_id))
+    return BillCreateResult(id=create_result_str)
 
 
 @router.delete(

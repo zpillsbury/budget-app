@@ -48,10 +48,6 @@ async def get_budgets(
     results = []
     async for doc in db.budgets.find({"user_id": user_id}):
 
-        updated_at = doc.get("updated_at")
-        if updated_at:
-            updated_at = updated_at.isoformat()
-
         results.append(
             Budget(
                 id=str(doc.get("_id")),
@@ -59,7 +55,7 @@ async def get_budgets(
                 total=doc.get("total"),
                 category=doc.get("category"),
                 name=doc.get("name"),
-                updated_at=updated_at,
+                updated_at=doc.get("updated_at"),
                 created_at=doc.get("created_at").isoformat(),
             )
         )
@@ -102,18 +98,14 @@ async def get_budget(
             status_code=status.HTTP_404_NOT_FOUND, detail="Budget not found."
         )
 
-    updated_at = doc.get("updated_at")
-    if updated_at:
-        updated_at = updated_at.isoformat()
-
     return Budget(
         id=str(doc.get("_id")),
         user_id=doc.get("user_id"),
         total=doc.get("total"),
         category=doc.get("category"),
         name=doc.get("name"),
-        updated_at=updated_at,
-        created_at=doc.get("created_at").isoformat(),
+        updated_at=doc.get("updated_at"),
+        created_at=doc.get("created_at"),
     )
 
 

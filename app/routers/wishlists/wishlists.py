@@ -14,7 +14,6 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from app.auth import validate_access
 from app.models import GenericException
 from app.utilities.clients import db
-from app.utilities.functions import validate_date
 
 from .models import (
     Wishlist,
@@ -56,7 +55,7 @@ async def get_wishlists(
                 total=doc.get("total"),
                 category=doc.get("category"),
                 name=doc.get("name"),
-                updated_at=validate_date(doc.get("updated_at")),
+                updated_at=doc.get("updated_at"),
                 created_at=doc.get("created_at"),
             )
         )
@@ -106,8 +105,8 @@ async def get_wishlist(
         total=doc.get("total"),
         category=doc.get("category"),
         name=doc.get("name"),
-        updated_at=validate_date(doc.get("updated_at")),
-        created_at=doc.get("created_at").isoformat(),
+        updated_at=doc.get("updated_at"),
+        created_at=doc.get("created_at"),
     )
 
 
